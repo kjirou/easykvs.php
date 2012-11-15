@@ -1,0 +1,5 @@
+DirectoryIndex index.html
+
+# UE DE text/plain NI SHITERU KARA
+AddType application/x-httpd-php .php
+AddHandler php5-script .php

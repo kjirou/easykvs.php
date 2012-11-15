@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=8">
+<title>easykvs.php introduction</title>
+<script type="text/javascript" src="./jquery-1.8.2.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="./jquery_binding.js" charset="utf-8"></script>
+<style type="text/css">
+pre.code {
+    padding: 5px;
+    color: #FFF;
+    background-color: #000;
+    font-size: 12px;
+    line-height: 12px;
+    letter-spacing: 0px;
+}
+.form_inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    line-height: 15px;
+    background-color: #EEE;
+}
+.inactive {
+    color: #999;
+}
+table {
+    width: 66%;
+    border-collapse: collapse;
+}
+table th {
+    padding: 3px;
+    font-size: 12px;
+    border: 1px solid #666;
+    background-color: #EEE;
+}
+table th.column_item_title {
+    width: 100px;
+}
+table td {
+    padding: 3px;
+    font-size: 12px;
+    border: 1px solid #666;
+}
+</style>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-1748595-5']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+<!-- /Google Analytics -->
+
+</head>
+<body>
+
+<h1>easykvs.php の紹介</h1>
+
+<h2>はじめに</h2>
+<div>
+<ul>
+    <li>開発用のダミーWeb-APIとして、簡易 Key-Value Store APIを設置するための<strong>PHP5</strong>用のスクリプトです</li>
+    <li>リクエストパラメータの キー=値 のセット を Key=Value のセットとして解釈させて、データの保存・取得を行います</li>
+    <li>レスポンス形式は JSON もしくは JSONP です</li>
+    <li>仕様や用語などは OpenSocial の <a href="http://developer.mixi.co.jp/connect/mixi_graph_api/mixi_io_spec_top/persistence-api/" target="_blank">Persistence API</a> をある程度参考にしています<br />
+        ・・・というより、自分的な用途はそのAPIを使うアプリを別環境で開発するためでした</li>
+    <li>簡単なFlashやJavaScriptアプリ用のストレージとしてもお使いいただけます</li>
+    <li><a href="https://github.com/kjirou/easykvs.php" target="_blank">GitHub - kjirou/easykvs.php</a></li>
+</ul>
+</div>
+
+<h2>更新履歴</h2>
+<div>
+<ul>
+    <li>v0.1.0 [2012-02-09] 公開</li>
+    <li>v0.1.1 [2012-05-09]
+        <ul>
+            <li>アクセスによる自動削除機能を一旦外しました、データの掃除には find コマンド &amp; cron で別のバッチを作る予定です</li>
+            <li>データファイルを1ディレクトリに展開するのを止めて、中で複数ディレクトリに分割した</li>
+            <li>person_id の文字数を4文字以上にした</li>
+        </ul>
+    </li>
+</ul>
+</div>
+
+<h2>Web-API動作例</h2>
+<div>
+    <div>
+        &quot;__person_id__&quot; へ4文字以上の任意の文字列(半角英数字・記号・_ のみ)を設定して実行してください<br />
+        「更新」後に別ブラウザでも「取得」が可能です
+        <div style="white-space:nowrap;">
+            (データ更新)
+            <form class="form_inline" action="./api.php" method="get">
+                ? __person_id__=<input type="text" name="__person_id__" maxlength="32">
+                &amp; __mode__=update<input type="hidden" name="__mode__" value="update">
+                &amp; key1=<input type="text" name="key1">
+                &amp; key2=<input type="text" name="key2">
+                <input type="submit" value="Update">
+            </form>
+        </div>
+        <div style="white-space:nowrap;">
+            (データ取得)
+            <form class="form_inline" action="./api.php" method="get">
+                ? __person_id__=<input type="text" name="__person_id__" maxlength="32">
+                &amp; __mode__=fetch<input type="hidden" name="__mode__" value="fetch">
+                <input type="submit" value="Fetch">
+            </form>
+        </div>
+    </div>
+</div>
+
+<h2>ダウンロードと最も簡単なインストール例</h2>
+<div>
+<ul>
+    <li>1. Webアクセスが可能な場所に任意の名前で<strong>ディレクトリを新規作成</strong>し、<strong>Webサーバへ書き込み権限</strong>を与えて下さい</li>
+    <li>2. <strong><a href="../easykvs.php">easykvs.php</a> のダウンロード</strong>をします、右クリで保存できます、それを 1 のディレクトリへ設置して下さい</li>
+    <li>3. 以下のソースコードをコピーして <strong>api.php</strong> というファイル名で 1 のディレクトリへ保存して下さい
+<pre class="code">&lt;?php
+ini_set(&#039;display_errors&#039;, &#039;0&#039;);
+require_once &#039;./easykvs.php&#039;;
+EasyKVS::auto_start();
+?&gt;</pre>
+</li>
+</ul>
+</div>
+
+<h2>設定オプション</h2>
+<div>
+<ul>
+    <li>ソースコードの <strong>EasyKVS::auto_start</strong> メソッドのコメントを参照して下さい</li>
+    <li>参考までにですが、動かない場合は 上記 api.php を以下のように修正して実行すると<br />
+        Fatal エラー内の文字列で悪い部分についての補足が出力される・・・かもしれません
+<pre class="code">&lt;?php
+//ini_set(&#039;display_errors&#039;, &#039;0&#039;);
+require_once &#039;./easykvs.php&#039;;
+EasyKVS::test();
+//EasyKVS::auto_start();
+?&gt;</pre>
+    最悪、コードが環境に対応してなくて絶対動かない可能性もあります</li>
+</ul>
+</div>
+
+<h2>Web-APIマニュアル</h2>
+<h3>リクエストAPI</h3>
+<table cellspacing="0" cellpadding="0">
+<tbody>
+    <tr>
+        <th class="column_item_title">キー</th>
+        <th>解説</th>
+    </tr>
+    <tr>
+        <td>__mode__</td>
+        <td>処理の種類、&quot;fetch&quot;=取得, &quot;update&quot;=更新, &quot;remove&quot;=指定ユーザの全データ削除、未設定は &quot;fetch&quot; と解釈</td>
+    </tr>
+    <tr>
+        <td>__person_id__</td>
+        <td>ユーザ識別用ID、半角英数字と_(アンダースコア)で4-32文字、設定必須</td>
+    </tr>
+    <tr>
+        <td>__jsonp__</td>
+        <td>JSONP形式で返す場合のコールバック関数名、JSで解釈可能な文字で1-128文字、設定任意</td>
+    </tr>
+    <tr>
+        <td>その他</td>
+        <td>update時のKey-Valueデータとして解釈、各キーは 半角英数字と _-:;{} で1-32文字</td>
+    </tr>
+</tbody>
+</table>
+<h3>レスポンスAPI (JSON形式)</h3>
+<table cellspacing="0" cellpadding="0">
+<tbody>
+    <tr>
+        <th class="column_item_title">キー</th>
+        <th>解説</th>
+    </tr>
+    <tr>
+        <td>status</td>
+        <td>結果種別、&quot;ok&quot;=成功, &quot;ng&quot;=失敗、なおHTTPステータスは常に200</td>
+    </tr>
+    <tr>
+        <td>message</td>
+        <td>結果に関する参考のメッセージ</td>
+    </tr>
+    <tr>
+        <td>data</td>
+        <td>fetch時のKey-Valueデータ本体</td>
+    </tr>
+</tbody>
+</table>
+
+<h2>jQuery.ajaxを使ったJavaScriptでの利用例</h2>
+<div>
+    <ul>
+        <li><a id="update_by_jquery" href="javascript:void(0)">保存</a> して <a id="fetch_by_jquery" href="javascript:void(0)">取得</a> するサンプル</li>
+        <li>サンプルコードは <a href="./jquery_binding.js">コチラのJSファイル</a> 参照</li>
+    </ul>
+</div>
+
+<h2 id="performance_issue" class="inactive">性能上の問題(解決済み)</h2>
+<div>
+<ul>
+    <li class="inactive">初期設定の場合、<strong>1日の新規ユーザ数が 1000 を超える状況では利用を推奨しません</strong><br />
+        以下はその理由について、興味のある方はご確認下さい</li>
+    <li class="inactive">これは、「1ユーザのデータを1ファイルとして1つのディレクトリへ設置している」という内部仕様によるものです</li>
+    <li class="inactive">初期設定では 7日アクセスの無いデータは削除されるので<br />
+        仮に1日の新規ユーザ数が 1000人 の場合は、概ね 1000 x 7 = 7000ファイル が1ディレクトリに展開されることとなります</li>
+    <li class="inactive">Linuxについて詳しくなく検証もしていないので正確にはわかりませんが<br />
+        「10000ファイルを超えたら危ないよね」という通説があり、それに従うと上記のような制約になります</li>
+    <li class="inactive">$life_time 値を修正して 7日 よりも短くすれば、その分多くのユーザにも対応できると思います<br />
+        逆に全く消さない場合は、トータルのユーザ数がその制約になってしまいます</li>
+    <li class="inactive">・・・というのは、<strong>全部推測</strong>なので実際どうなるかはわかりません<br />
+        自分が検証済みな状況は「自分一人が常に使ってて、他1日+1名程度」という状況だけです</li>
+    <li>上記のような問題がありましたが、サブディレクトリに振り分けることで解決しました</li>
+</ul>
+</div>
+
+<h2>提供元</h2>
+<ul>
+    <li><a href="http://kjirou.sakura.ne.jp/mt/">それなりブログ</a>
+        (<a href="http://kjirou.sakura.ne.jp/mt/2012/02/easykvsphp_keyvalue_store_api_1.html">関連エントリ</a>)</li>
+    <li><a href="http://kjirou.net/">kjirou.net</a></li>
+</ul>
+
+</body>
+</html>
+
